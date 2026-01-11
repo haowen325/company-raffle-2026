@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司年終尾牙抽獎系統</title>
+    <!-- Google Fonts for better typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <!-- canvas-confetti for celebration effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        /* --- Inlined CSS --- */
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #e60012;
+            /* Festive Red */
+            --secondary-color: #ffcc00;
+            /* Gold */
+            --background-color: #f8f1e5;
+            /* Light cream/paper background */
+            --text-color: #333;
+            --card-bg: #fff;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: #fff;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        #groupTitleDisplay {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            letter-spacing: 3px;
+            margin-bottom: 0.2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        #headerTitle {
+            margin: 0;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        #subtitleDisplay {
+            margin-top: 0.5rem;
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        .container.settings-active {
+            grid-template-columns: 1fr 350px;
+        }
+
+        .container.settings-active .main-content {
+            display: none;
+        }
+
+        /* Sidebar / Settings */
+        .sidebar {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        .sidebar h2 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            height: 150px;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #c70010;
+        }
+
+        .btn-secondary {
+            background-color: #666;
+            color: #fff;
+            margin-top: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555;
+        }
+
+        /* Sidebar Tabs */
+        .sidebar-tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            color: #999;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .panel {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Interactive Prize List */
+        .prize-list-display {
+            list-style: none;
+            padding: 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .prize-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prize-item:hover {
+            background: #fff5f5;
+            border-color: var(--primary-color);
+        }
+
+        .prize-item.active {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(230, 0, 18, 0.2);
+        }
+
+        .prize-item.drawn {
+            background: #eee;
+            color: #aaa;
+            border-color: #eee;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        /* Main Display adjustments */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .display-area {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 4px solid var(--secondary-color);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .current-prize {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .winner-display {
+            font-size: 5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 1rem 0;
+            min-height: 1.2em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn-action {
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s;
+        }
+
+        .btn-start {
+            background-color: var(--secondary-color);
+            color: #000;
+            box-shadow: 0 4px 0 #d4a000;
+        }
+
+        .btn-start:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn-stop {
+            background-color: var(--primary-color);
+            color: #fff;
+            box-shadow: 0 4px 0 #a3000d;
+        }
+
+        .btn-stop:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* Results Section */
+        .results-area {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .results-area h2 {
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        .results-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* Prize Row Styles */
+        .prize-rows-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .prize-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 60px 38px;
+            gap: 8px;
+            align-items: center;
+        }
+
+        @media (max-width: 480px) {
+            .prize-row {
+                grid-template-columns: 1fr 1fr 60px 38px;
+                gap: 6px;
+            }
+        }
+
+        .prize-row input {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+            min-width: 0;
+            margin: 0;
+        }
+
+        .prize-row button.delete-row-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            height: 100%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-quick-add {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+        }
+
+        .close-quick-add:hover {
+            color: #000;
+        }
+
+        .result-item {
+            background: #fff;
+            border-left: 5px solid var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-prize {
+            font-size: 0.9rem;
+            color: #888;
+            font-weight: bold;
+        }
+
+        .result-name {
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: var(--text-color);
+            align-self: flex-start;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 300px 1fr;
+                grid-template-areas:
+                    "sidebar main"
+                    "results results";
+            }
+
+            .sidebar {
+                grid-area: sidebar;
+            }
+
+            .main-content {
+                grid-area: main;
+            }
+
+            .results-area {
+                grid-area: results;
+                max-height: none;
+            }
+
+            .results-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            #headerTitle {
+                font-size: 2.2rem;
+            }
+
+            .winner-display {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem 0.5rem;
+            }
+
+            #headerTitle {
+                font-size: 1.8rem;
+            }
+
+            #groupTitleDisplay {
+                font-size: 0.9rem;
+                letter-spacing: 1.5px;
+            }
+
+            #subtitleDisplay {
+                font-size: 1rem;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "sidebar"
+                    "main"
+                    "results";
+                margin: 0.5rem auto;
+                gap: 1rem;
+            }
+
+            .display-area {
+                padding: 2rem 1rem;
+                min-height: 320px;
+            }
+
+            .winner-display {
+                font-size: 3.5rem;
+            }
+
+            .btn-action {
+                width: 100%;
+                padding: 1rem;
+            }
+
+            .celebration-winner {
+                font-size: 4rem;
+            }
+
+            .celebration-prize {
+                font-size: 1.2rem;
+            }
+
+            .celebration-badge {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .winner-display {
+                font-size: 3rem;
+            }
+
+            .celebration-winner {
+                font-size: 3rem;
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .remaining-list {
+            list-style: none;
+            padding: 0;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .remaining-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Winner Celebration Overlay */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .celebration-content {
+            text-align: center;
+            color: white;
+            max-width: 90%;
+        }
+
+        .celebration-badge {
+            background: var(--secondary-color);
+            color: #000;
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .celebration-prize {
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .celebration-winner {
+            font-size: 8rem;
+            font-weight: 900;
+            color: var(--secondary-color);
+            text-shadow: 0 0 30px rgba(255, 204, 0, 0.6);
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            animation: zoomBounce 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s both;
+        }
+
+        .celebration-hint {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes zoomBounce {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div id="groupTitleDisplay" style="display: none;"></div>
+        <h1 id="headerTitle">🎉 年終尾牙大抽獎 🎉</h1>
+        <div id="subtitleDisplay" style="display: none;"></div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-tabs">
+                <button id="tabDraw" class="tab-btn active">抽獎模式</button>
+                <button id="tabSettings" class="tab-btn">設定名單</button>
+            </div>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <button id="viewParticipantsBtn" class="btn btn-secondary"
+                    style="font-size: 0.9rem; padding: 0.5rem; background-color: #6c757d;">👥 查看未中獎名單</button>
+            </div>
+
+            <div id="drawModePanel" class="panel active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0;">請點選獎項：</h3>
+                    <button id="quickAddPrizeBtn"
+                        style="padding: 2px 10px; font-size: 1.2rem; font-weight:bold; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; line-height:1;">+</button>
+                </div>
+                <ul id="prizeListDisplay" class="prize-list-display"></ul>
+            </div>
+
+            <div id="settingsModePanel" class="panel" style="display: none;">
+                <div class="input-group">
+                    <label for="groupTitleInput">公司 / 團體名稱</label>
+                    <input type="text" id="groupTitleInput" placeholder="例如：某某股份有限公司">
+                </div>
+                <div class="input-group">
+                    <label for="titleInput">活動標題</label>
+                    <input type="text" id="titleInput" value="🎉 年終尾牙大抽獎 🎉">
+                </div>
+                <div class="input-group">
+                    <label for="subtitleInput">活動副標題 / 祝福語</label>
+                    <input type="text" id="subtitleInput" placeholder="例如：祝各位同仁 好運連連">
+                </div>
+                <div class="input-group">
+                    <label for="eventDateInput">活動日期</label>
+                    <input type="date" id="eventDateInput">
+                </div>
+                <div class="input-group">
+                    <label for="sheetsUrlInput">📊 Google Sheets URL</label>
+                    <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+                <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                    <input type="checkbox" id="allowRepeat" style="width: 20px; height: 20px;">
+                    <label for="allowRepeat" style="margin-bottom: 0; cursor: pointer;">允許重複中獎</label>
+                </div>
+                <div class="input-group">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label style="margin: 0;">獎項清單</label>
+                        <button id="clearPrizesBtn" class="btn"
+                            style="width: auto; padding: 2px 8px; font-size: 0.75rem; background: #6c757d; color: white; border-radius: 4px;">清空獎項</button>
+                    </div>
+                    <div id="prizeRowsContainer" class="prize-rows-container"></div>
+                    <button id="addPrizeRowBtn" class="btn btn-secondary"
+                        style="width:100%; margin-top:0.5rem; background:#eee; color:#333; border:1px dashed #ccc;">+
+                        新增一行</button>
+                </div>
+                <div class="input-group">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label style="margin: 0;" for="nameInput">參加人員名單 (一行一個)</label>
+                        <button id="clearNamesBtn" class="btn"
+                            style="width: auto; padding: 2px 8px; font-size: 0.75rem; background: #6c757d; color: white; border-radius: 4px;">清空名單</button>
+                    </div>
+                    <textarea id="nameInput" placeholder="輸入人名..."></textarea>
+                </div>
+                <div class="settings-actions" style="display: flex; gap: 10px;">
+                    <button id="saveSettingsBtn" class="btn btn-primary" style="flex: 2;">儲存並更新</button>
+                    <button id="loadExampleBtn" class="btn btn-secondary"
+                        style="flex: 1; background-color: #6c757d;">載入範例</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="display-area">
+                <div class="current-prize" id="currentPrizeLabel">準備開始抽獎...</div>
+                <div class="winner-display" id="winnerDisplay">???</div>
+                <div class="controls-options" style="margin-bottom: 1rem;">
+                    <input type="checkbox" id="drawAllowRepeat">
+                    <label for="drawAllowRepeat"
+                        style="cursor: pointer; font-weight: bold; color: #555;">本次抽獎允許重複中獎</label>
+                </div>
+                <div class="controls">
+                    <button id="mainActionBtn" class="btn btn-action btn-start">開始抽獎</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-area">
+            <h2>🏆 中獎名單</h2>
+            <ul id="resultsList" class="results-list"></ul>
+            <div style="text-align: right; margin-top: 1rem;">
+                <button id="resetBtn" class="btn btn-secondary"
+                    style="width: auto; display: inline-block;">重置所有結果</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div id="celebrationOverlay" class="celebration-overlay" style="display: none;">
+        <div class="celebration-content">
+            <div class="celebration-badge">恭喜中獎</div>
+            <div id="celebrationPrize" class="celebration-prize"></div>
+            <div id="celebrationWinner" class="celebration-winner"></div>
+            <div class="celebration-hint">點擊螢幕關閉</div>
+        </div>
+    </div>
+
+    <script>
+        /* --- Inlined JS --- */
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const prizeInput = document.getElementById('prizeInput');
+            const nameInput = document.getElementById('nameInput');
+            const titleInput = document.getElementById('titleInput');
+            const groupTitleInput = document.getElementById('groupTitleInput');
+            const subtitleInput = document.getElementById('subtitleInput');
+            const allowRepeatCheckbox = document.getElementById('allowRepeat');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const headerTitle = document.getElementById('headerTitle');
+            const groupTitleDisplay = document.getElementById('groupTitleDisplay');
+            const subtitleDisplay = document.getElementById('subtitleDisplay');
+            const tabDraw = document.getElementById('tabDraw');
+            const tabSettings = document.getElementById('tabSettings');
+            const drawModePanel = document.getElementById('drawModePanel');
+            const settingsModePanel = document.getElementById('settingsModePanel');
+            const prizeListDisplay = document.getElementById('prizeListDisplay');
+            const currentPrizeLabel = document.getElementById('currentPrizeLabel');
+            const winnerDisplay = document.getElementById('winnerDisplay');
+            const celebrationOverlay = document.getElementById('celebrationOverlay');
+            const celebrationPrize = document.getElementById('celebrationPrize');
+            const celebrationWinner = document.getElementById('celebrationWinner');
+            const mainActionBtn = document.getElementById('mainActionBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const resultsList = document.getElementById('resultsList');
+            const drawAllowRepeatCheckbox = document.getElementById('drawAllowRepeat');
+            const sheetsUrlInput = document.getElementById('sheetsUrlInput');
+            const eventDateInput = document.getElementById('eventDateInput');
+            const prizeRowsContainer = document.getElementById('prizeRowsContainer');
+            const addPrizeRowBtn = document.getElementById('addPrizeRowBtn');
+
+            let prizeConfig = [];
+            let participants = [];
+            let allParticipants = [];
+            let prizeDrawCounts = {};
+            let resultsHistory = [];
+            let isRolling = false;
+            let rollInterval;
+            let selectedPrizeIndex = -1;
+            let isStopping = false;
+
+            const samplePrizes = [
+                "特獎：Apple iPhone 15 Pro (256GB) x 1",
+                "頭獎：Sony 65吋 4K 智慧電視 x 1",
+                "二獎：Dyson 無線吸塵器 x 2",
+                "三獎：Switch OLED 遊戲主機 x 3",
+                "四獎：百貨公司禮券 5,000元 x 5",
+                "五獎：高級空氣清淨機 x 5",
+                "六獎：星巴克隨行杯 x 10",
+                "安慰獎：現金紅包 2,000元 x 20"
+            ];
+
+            const sampleNames = [
+                "陳建弘", "林怡君", "黃志明", "張雅婷", "李俊傑", "王淑芬",
+                "吳冠宇", "劉惠雯", "蔡志強", "楊佩珊", "許家豪", "鄭婉婷",
+                "謝明哲", "洪佳琪", "郭瑋倫", "曾筱涵", "賴建國", "廖美玲",
+                "徐家瑋", "周怡萱", "袁志忠", "鄧雅雯", "彭冠廷", "鍾宜君",
+                "蘇郁婷", "葉冠宏", "莊欣怡", "呂建宏", "江佳穎", "何志偉"
+            ];
+
+            function init() {
+                initFromSamples();
+                renderPrizeSettingsRows();
+                renderPrizeList();
+                updateUIState();
+                setupSettingsRowActions();
+            }
+
+            function initFromSamples() {
+                prizeConfig = samplePrizes.map((line, index) => parseSinglePrizeLine(line, index));
+                allParticipants = sampleNames;
+                participants = [...allParticipants];
+                prizeDrawCounts = {};
+                prizeConfig.forEach(p => prizeDrawCounts[p.id] = 0);
+                if (eventDateInput) eventDateInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            function parseSinglePrizeLine(line, index = 0) {
+                let fullString = line;
+                let count = 1;
+                const match = line.match(/(.*)[xX\*]\s*(\d+)$/);
+                if (match) { fullString = match[1].trim(); count = parseInt(match[2], 10); }
+                let title = fullString; let content = "";
+                const colonMatch = fullString.match(/^(.*?)[：:](.*)$/);
+                if (colonMatch) { title = colonMatch[1].trim(); content = colonMatch[2].trim(); }
+                return { id: index, name: fullString, title, content, total: count };
+            }
+
+            function setupSettingsRowActions() {
+                if (addPrizeRowBtn) addPrizeRowBtn.addEventListener('click', () => addSettingsRow());
+            }
+
+            function addSettingsRow(data = { title: '', content: '', total: 1 }) {
+                const row = document.createElement('div');
+                row.className = 'prize-row';
+                row.innerHTML = `
+            <input type="text" class="row-title" placeholder="獎項" value="${data.title}">
+            <input type="text" class="row-content" placeholder="內容" value="${data.content}">
+            <input type="number" class="row-count" placeholder="數量" value="${data.total}" min="1">
+            <button class="delete-row-btn" title="刪除">&times;</button>
+        `;
+                row.querySelector('.delete-row-btn').addEventListener('click', () => row.remove());
+                prizeRowsContainer.appendChild(row);
+            }
+
+            function renderPrizeSettingsRows() {
+                prizeRowsContainer.innerHTML = '';
+                prizeConfig.forEach(p => addSettingsRow({ title: p.title, content: p.content, total: p.total }));
+            }
+
+            function renderPrizeList() {
+                prizeListDisplay.innerHTML = '';
+                prizeConfig.forEach((prize) => {
+                    const drawn = prizeDrawCounts[prize.id] || 0;
+                    const isFullyDrawn = drawn >= prize.total;
+                    const li = document.createElement('li');
+                    li.className = 'prize-item' + (isFullyDrawn ? ' drawn' : '') + (prize.id === selectedPrizeIndex ? ' active' : '');
+                    li.innerHTML = `<div style="display:flex; flex-direction:column;"><span style="font-weight:bold; color:var(--primary-color);">${prize.title}</span><span style="font-size:0.8em; color:#666;">${prize.content}</span></div><span style="font-size:0.8em; color:#999;">(${drawn}/${prize.total})</span>`;
+                    li.addEventListener('click', () => { if (!isRolling && !isStopping && !isFullyDrawn) selectPrize(prize.id); });
+                    prizeListDisplay.appendChild(li);
+                });
+            }
+
+            function selectPrize(id) {
+                selectedPrizeIndex = id;
+                winnerDisplay.textContent = "???";
+                winnerDisplay.classList.remove('highlight-winner');
+                renderPrizeList();
+                updateUIState();
+            }
+
+            function updateUIState() {
+                headerTitle.textContent = titleInput.value.trim() || "🎉 年終尾牙大抽獎 🎉";
+                groupTitleDisplay.textContent = groupTitleInput.value.trim();
+                groupTitleDisplay.style.display = groupTitleInput.value.trim() ? 'block' : 'none';
+                subtitleDisplay.textContent = subtitleInput.value.trim();
+                subtitleDisplay.style.display = subtitleInput.value.trim() ? 'block' : 'none';
+
+                const prize = prizeConfig.find(p => p.id === selectedPrizeIndex);
+                if (isStopping) { mainActionBtn.textContent = "抽獎中..."; mainActionBtn.disabled = true; }
+                else if (isRolling) { mainActionBtn.textContent = "停止"; mainActionBtn.className = 'btn btn-action btn-stop'; }
+                else {
+                    mainActionBtn.textContent = "開始抽獎"; mainActionBtn.className = 'btn btn-action btn-start';
+                    if (prize) {
+                        const drawn = prizeDrawCounts[prize.id] || 0;
+                        mainActionBtn.disabled = drawn >= prize.total;
+                        currentPrizeLabel.innerHTML = `準備抽：<span style="color:var(--primary-color)">${prize.title}</span>`;
+                    } else {
+                        currentPrizeLabel.textContent = "請選擇一個獎項"; mainActionBtn.disabled = true;
+                    }
+                }
+            }
+
+            mainActionBtn.addEventListener('click', () => { if (isRolling) stopDraw(); else startDraw(); });
+
+            function startDraw() {
+                if (selectedPrizeIndex === -1) return;
+                recalculateParticipantPool();
+                if (participants.length === 0) { alert("名單已空！"); return; }
+                isRolling = true; winnerDisplay.textContent = "Rolling..."; updateUIState();
+                rollInterval = setInterval(() => { winnerDisplay.textContent = participants[Math.floor(Math.random() * participants.length)]; }, 50);
+            }
+
+            function stopDraw() {
+                isStopping = true; updateUIState();
+                let speed = 50, steps = 0;
+                function slowLoop() {
+                    clearInterval(rollInterval);
+                    winnerDisplay.textContent = participants[Math.floor(Math.random() * participants.length)];
+                    speed += 40; steps++;
+                    if (steps < 10) rollInterval = setInterval(slowLoop, speed);
+                    else finalizeWinner();
+                }
+                slowLoop();
+            }
+
+            function finalizeWinner() {
+                isRolling = false; isStopping = false; clearInterval(rollInterval);
+                const winnerName = participants[Math.floor(Math.random() * participants.length)];
+                winnerDisplay.textContent = winnerName; winnerDisplay.classList.add('highlight-winner');
+                showCelebration(winnerName);
+                recordResult(winnerName);
+                renderPrizeList(); updateUIState();
+            }
+
+            function showCelebration(winnerName) {
+                const prize = prizeConfig.find(p => p.id === selectedPrizeIndex);
+                celebrationPrize.textContent = prize ? prize.name : "";
+                celebrationWinner.textContent = winnerName;
+                celebrationOverlay.style.display = 'flex';
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            }
+
+            celebrationOverlay.addEventListener('click', () => celebrationOverlay.style.display = 'none');
+
+            function recordResult(winnerName) {
+                const prize = prizeConfig.find(p => p.id === selectedPrizeIndex);
+                prizeDrawCounts[prize.id]++;
+                resultsHistory.push({ prizeTitle: prize.title, winnerName, timestamp: Date.now() });
+                renderResultsList();
+            }
+
+            function renderResultsList() {
+                resultsList.innerHTML = '';
+                resultsHistory.forEach(r => {
+                    const li = document.createElement('li'); li.className = 'result-item';
+                    li.innerHTML = `<div class="result-prize">${r.prizeTitle}</div><span class="result-name">${r.winnerName}</span>`;
+                    resultsList.appendChild(li);
+                });
+            }
+
+            function recalculateParticipantPool() {
+                const winners = new Set(resultsHistory.map(r => r.winnerName));
+                participants = allParticipants.filter(p => !winners.has(p));
+            }
+
+            saveSettingsBtn.addEventListener('click', () => {
+                prizeConfig = [];
+                document.querySelectorAll('.prize-row').forEach((row, idx) => {
+                    const title = row.querySelector('.row-title').value.trim();
+                    const content = row.querySelector('.row-content').value.trim();
+                    const count = parseInt(row.querySelector('.row-count').value) || 1;
+                    if (title) prizeConfig.push({ id: idx, title, content, name: `${title} ${content}`, total: count });
+                });
+                allParticipants = nameInput.value.split('\n').map(s => s.trim()).filter(s => s);
+                prizeDrawCounts = {};
+                prizeConfig.forEach(p => prizeDrawCounts[p.id] = 0);
+                renderPrizeList(); updateUIState();
+                alert("設定已更新！");
+                tabDraw.click();
+            });
+
+            document.getElementById('loadExampleBtn').addEventListener('click', () => {
+                initFromSamples();
+                renderPrizeSettingsRows();
+                nameInput.value = sampleNames.join('\n');
+                alert("範例載入完成，請點擊儲存！");
+            });
+
+            tabDraw.addEventListener('click', () => {
+                tabDraw.classList.add('active'); tabSettings.classList.remove('active');
+                drawModePanel.style.display = 'block'; settingsModePanel.style.display = 'none';
+                document.querySelector('.container').classList.remove('settings-active');
+            });
+
+            tabSettings.addEventListener('click', () => {
+                tabDraw.classList.remove('active'); tabSettings.classList.add('active');
+                drawModePanel.style.display = 'none'; settingsModePanel.style.display = 'block';
+                document.querySelector('.container').classList.add('settings-active');
+            });
+
+            init();
+        });
+    </script>
+</body>
+
+</html>

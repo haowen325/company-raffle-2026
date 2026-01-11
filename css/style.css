@@ -73,6 +73,12 @@ body {
     grid-template-columns: 1fr 350px;
 }
 
+@media (max-width: 768px) {
+    .container.settings-active {
+        grid-template-columns: 1fr;
+    }
+}
+
 .container.settings-active .main-content {
     display: none;
 }
@@ -339,9 +345,9 @@ body {
 
 @media (max-width: 480px) {
     .prize-row {
-        grid-template-columns: 1fr 1fr 60px 38px;
-        /* Two fluid name fields, fixed count/delete */
-        gap: 6px;
+        grid-template-columns: 60px 1fr 50px 38px;
+        /* Fixed rank width, fluid content */
+        gap: 4px;
     }
 }
 

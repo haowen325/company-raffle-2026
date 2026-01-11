@@ -88,6 +88,13 @@
             grid-template-columns: 1fr 350px;
         }
 
+        /* FIX: Ensure one column in settings mode on small screens */
+        @media (max-width: 768px) {
+            .container.settings-active {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .container.settings-active .main-content {
             display: none;
         }
@@ -349,8 +356,9 @@
 
         @media (max-width: 480px) {
             .prize-row {
-                grid-template-columns: 1fr 1fr 60px 38px;
-                gap: 6px;
+                grid-template-columns: 60px 1fr 50px 38px;
+                /* Fixed rank, fluid content, fixed qty/del */
+                gap: 4px;
             }
         }
 
@@ -387,10 +395,6 @@
             position: absolute;
             right: 1.5rem;
             top: 1rem;
-        }
-
-        .close-quick-add:hover {
-            color: #000;
         }
 
         .result-item {
@@ -497,18 +501,6 @@
                 width: 100%;
                 padding: 1rem;
             }
-
-            .celebration-winner {
-                font-size: 4rem;
-            }
-
-            .celebration-prize {
-                font-size: 1.2rem;
-            }
-
-            .celebration-badge {
-                font-size: 1.2rem;
-            }
         }
 
         @media (max-width: 480px) {
@@ -517,7 +509,7 @@
             }
 
             .celebration-winner {
-                font-size: 3rem;
+                font-size: 3.5rem;
             }
         }
 
@@ -548,39 +540,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .close-modal {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            position: absolute;
-            right: 1.5rem;
-            top: 1rem;
-        }
-
-        .close-modal:hover,
-        .close-modal:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .remaining-list {
-            list-style: none;
-            padding: 0;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .remaining-item {
-            border-bottom: 1px solid #eee;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Winner Celebration Overlay */
         .celebration-overlay {
             position: fixed;
             top: 0;
@@ -633,10 +592,14 @@
             animation: zoomBounce 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s both;
         }
 
-        .celebration-hint {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.5);
-            animation: pulse 2s infinite;
+        @media (max-width: 768px) {
+            .celebration-winner {
+                font-size: 4rem;
+            }
+
+            .celebration-prize {
+                font-size: 1.5rem;
+            }
         }
 
         @keyframes popIn {
@@ -681,20 +644,6 @@
             }
         }
 
-        @keyframes pulse {
-            0% {
-                opacity: 0.3;
-            }
-
-            50% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0.3;
-            }
-        }
-
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -720,70 +669,36 @@
                 <button id="tabDraw" class="tab-btn active">抽獎模式</button>
                 <button id="tabSettings" class="tab-btn">設定名單</button>
             </div>
-            <div style="text-align: center; margin-bottom: 1rem;">
-                <button id="viewParticipantsBtn" class="btn btn-secondary"
-                    style="font-size: 0.9rem; padding: 0.5rem; background-color: #6c757d;">👥 查看未中獎名單</button>
-            </div>
 
             <div id="drawModePanel" class="panel active">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3 style="margin: 0;">請點選獎項：</h3>
-                    <button id="quickAddPrizeBtn"
-                        style="padding: 2px 10px; font-size: 1.2rem; font-weight:bold; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; line-height:1;">+</button>
                 </div>
                 <ul id="prizeListDisplay" class="prize-list-display"></ul>
             </div>
 
             <div id="settingsModePanel" class="panel" style="display: none;">
-                <div class="input-group">
-                    <label for="groupTitleInput">公司 / 團體名稱</label>
-                    <input type="text" id="groupTitleInput" placeholder="例如：某某股份有限公司">
-                </div>
-                <div class="input-group">
-                    <label for="titleInput">活動標題</label>
-                    <input type="text" id="titleInput" value="🎉 年終尾牙大抽獎 🎉">
-                </div>
-                <div class="input-group">
-                    <label for="subtitleInput">活動副標題 / 祝福語</label>
-                    <input type="text" id="subtitleInput" placeholder="例如：祝各位同仁 好運連連">
-                </div>
-                <div class="input-group">
-                    <label for="eventDateInput">活動日期</label>
-                    <input type="date" id="eventDateInput">
-                </div>
-                <div class="input-group">
-                    <label for="sheetsUrlInput">📊 Google Sheets URL</label>
-                    <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
-                </div>
-                <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
-                    <input type="checkbox" id="allowRepeat" style="width: 20px; height: 20px;">
-                    <label for="allowRepeat" style="margin-bottom: 0; cursor: pointer;">允許重複中獎</label>
-                </div>
+                <div class="input-group"><label for="groupTitleInput">公司 / 團體名稱</label><input type="text"
+                        id="groupTitleInput" placeholder="..."></div>
+                <div class="input-group"><label for="titleInput">活動標題</label><input type="text" id="titleInput"
+                        value="🎉 年終尾牙大抽獎 🎉"></div>
+                <div class="input-group"><label for="subtitleInput">活動副標題</label><input type="text" id="subtitleInput"
+                        placeholder="..."></div>
                 <div class="input-group">
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <label style="margin: 0;">獎項清單</label>
-                        <button id="clearPrizesBtn" class="btn"
-                            style="width: auto; padding: 2px 8px; font-size: 0.75rem; background: #6c757d; color: white; border-radius: 4px;">清空獎項</button>
-                    </div>
+                        <label style="margin: 0;">獎項清單</label></div>
                     <div id="prizeRowsContainer" class="prize-rows-container"></div>
-                    <button id="addPrizeRowBtn" class="btn btn-secondary"
-                        style="width:100%; margin-top:0.5rem; background:#eee; color:#333; border:1px dashed #ccc;">+
+                    <button id="addPrizeRowBtn" class="btn btn-secondary" style="width:100%; margin-top:0.5rem;">+
                         新增一行</button>
                 </div>
                 <div class="input-group">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <label style="margin: 0;" for="nameInput">參加人員名單 (一行一個)</label>
-                        <button id="clearNamesBtn" class="btn"
-                            style="width: auto; padding: 2px 8px; font-size: 0.75rem; background: #6c757d; color: white; border-radius: 4px;">清空名單</button>
-                    </div>
+                    <label for="nameInput">參加人員名單 (一行一個)</label>
                     <textarea id="nameInput" placeholder="輸入人名..."></textarea>
                 </div>
                 <div class="settings-actions" style="display: flex; gap: 10px;">
                     <button id="saveSettingsBtn" class="btn btn-primary" style="flex: 2;">儲存並更新</button>
-                    <button id="loadExampleBtn" class="btn btn-secondary"
-                        style="flex: 1; background-color: #6c757d;">載入範例</button>
+                    <button id="loadExampleBtn" class="btn btn-secondary" style="flex: 1;">載入範例</button>
                 </div>
             </div>
         </div>
@@ -792,11 +707,6 @@
             <div class="display-area">
                 <div class="current-prize" id="currentPrizeLabel">準備開始抽獎...</div>
                 <div class="winner-display" id="winnerDisplay">???</div>
-                <div class="controls-options" style="margin-bottom: 1rem;">
-                    <input type="checkbox" id="drawAllowRepeat">
-                    <label for="drawAllowRepeat"
-                        style="cursor: pointer; font-weight: bold; color: #555;">本次抽獎允許重複中獎</label>
-                </div>
                 <div class="controls">
                     <button id="mainActionBtn" class="btn btn-action btn-start">開始抽獎</button>
                 </div>
@@ -806,33 +716,26 @@
         <div class="results-area">
             <h2>🏆 中獎名單</h2>
             <ul id="resultsList" class="results-list"></ul>
-            <div style="text-align: right; margin-top: 1rem;">
-                <button id="resetBtn" class="btn btn-secondary"
-                    style="width: auto; display: inline-block;">重置所有結果</button>
-            </div>
+            <button id="resetBtn" class="btn btn-secondary" style="margin-top: 1rem;">重置紀錄</button>
         </div>
     </div>
 
-    <!-- Celebration Overlay -->
     <div id="celebrationOverlay" class="celebration-overlay" style="display: none;">
         <div class="celebration-content">
             <div class="celebration-badge">恭喜中獎</div>
             <div id="celebrationPrize" class="celebration-prize"></div>
             <div id="celebrationWinner" class="celebration-winner"></div>
-            <div class="celebration-hint">點擊螢幕關閉</div>
+            <div style="font-size: 1rem; color: rgba(255,255,255,0.5);">點擊螢幕關閉</div>
         </div>
     </div>
 
     <script>
         /* --- Inlined JS --- */
         document.addEventListener('DOMContentLoaded', () => {
-
-            const prizeInput = document.getElementById('prizeInput');
             const nameInput = document.getElementById('nameInput');
             const titleInput = document.getElementById('titleInput');
             const groupTitleInput = document.getElementById('groupTitleInput');
             const subtitleInput = document.getElementById('subtitleInput');
-            const allowRepeatCheckbox = document.getElementById('allowRepeat');
             const saveSettingsBtn = document.getElementById('saveSettingsBtn');
             const headerTitle = document.getElementById('headerTitle');
             const groupTitleDisplay = document.getElementById('groupTitleDisplay');
@@ -848,11 +751,7 @@
             const celebrationPrize = document.getElementById('celebrationPrize');
             const celebrationWinner = document.getElementById('celebrationWinner');
             const mainActionBtn = document.getElementById('mainActionBtn');
-            const resetBtn = document.getElementById('resetBtn');
             const resultsList = document.getElementById('resultsList');
-            const drawAllowRepeatCheckbox = document.getElementById('drawAllowRepeat');
-            const sheetsUrlInput = document.getElementById('sheetsUrlInput');
-            const eventDateInput = document.getElementById('eventDateInput');
             const prizeRowsContainer = document.getElementById('prizeRowsContainer');
             const addPrizeRowBtn = document.getElementById('addPrizeRowBtn');
 
@@ -862,206 +761,113 @@
             let prizeDrawCounts = {};
             let resultsHistory = [];
             let isRolling = false;
-            let rollInterval;
             let selectedPrizeIndex = -1;
-            let isStopping = false;
 
-            const samplePrizes = [
-                "特獎：Apple iPhone 15 Pro (256GB) x 1",
-                "頭獎：Sony 65吋 4K 智慧電視 x 1",
-                "二獎：Dyson 無線吸塵器 x 2",
-                "三獎：Switch OLED 遊戲主機 x 3",
-                "四獎：百貨公司禮券 5,000元 x 5",
-                "五獎：高級空氣清淨機 x 5",
-                "六獎：星巴克隨行杯 x 10",
-                "安慰獎：現金紅包 2,000元 x 20"
-            ];
-
-            const sampleNames = [
-                "陳建弘", "林怡君", "黃志明", "張雅婷", "李俊傑", "王淑芬",
-                "吳冠宇", "劉惠雯", "蔡志強", "楊佩珊", "許家豪", "鄭婉婷",
-                "謝明哲", "洪佳琪", "郭瑋倫", "曾筱涵", "賴建國", "廖美玲",
-                "徐家瑋", "周怡萱", "袁志忠", "鄧雅雯", "彭冠廷", "鍾宜君",
-                "蘇郁婷", "葉冠宏", "莊欣怡", "呂建宏", "江佳穎", "何志偉"
-            ];
+            const samplePrizes = ["特獎：iPhone 15 Pro x 1", "頭獎：65吋電視 x 1", "二獎：吸塵器 x 2", "三獎：Switch x 3"];
+            const sampleNames = ["陳建弘", "林怡君", "黃志明", "張雅婷", "李俊傑", "王淑芬", "吳冠宇", "劉惠雯", "蔡志強", "楊佩珊"];
 
             function init() {
                 initFromSamples();
                 renderPrizeSettingsRows();
                 renderPrizeList();
                 updateUIState();
-                setupSettingsRowActions();
+                addPrizeRowBtn.addEventListener('click', () => addSettingsRow());
             }
 
             function initFromSamples() {
-                prizeConfig = samplePrizes.map((line, index) => parseSinglePrizeLine(line, index));
-                allParticipants = sampleNames;
+                prizeConfig = samplePrizes.map((line, idx) => {
+                    const match = line.match(/(.*) x (\d+)$/);
+                    return { id: idx, title: match ? match[1] : line, content: '', total: match ? parseInt(match[2]) : 1 };
+                });
+                allParticipants = [...sampleNames];
                 participants = [...allParticipants];
-                prizeDrawCounts = {};
                 prizeConfig.forEach(p => prizeDrawCounts[p.id] = 0);
-                if (eventDateInput) eventDateInput.value = new Date().toISOString().split('T')[0];
-            }
-
-            function parseSinglePrizeLine(line, index = 0) {
-                let fullString = line;
-                let count = 1;
-                const match = line.match(/(.*)[xX\*]\s*(\d+)$/);
-                if (match) { fullString = match[1].trim(); count = parseInt(match[2], 10); }
-                let title = fullString; let content = "";
-                const colonMatch = fullString.match(/^(.*?)[：:](.*)$/);
-                if (colonMatch) { title = colonMatch[1].trim(); content = colonMatch[2].trim(); }
-                return { id: index, name: fullString, title, content, total: count };
-            }
-
-            function setupSettingsRowActions() {
-                if (addPrizeRowBtn) addPrizeRowBtn.addEventListener('click', () => addSettingsRow());
             }
 
             function addSettingsRow(data = { title: '', content: '', total: 1 }) {
                 const row = document.createElement('div');
                 row.className = 'prize-row';
-                row.innerHTML = `
-            <input type="text" class="row-title" placeholder="獎項" value="${data.title}">
-            <input type="text" class="row-content" placeholder="內容" value="${data.content}">
-            <input type="number" class="row-count" placeholder="數量" value="${data.total}" min="1">
-            <button class="delete-row-btn" title="刪除">&times;</button>
-        `;
+                row.innerHTML = `<input type="text" class="row-title" placeholder="獎項" value="${data.title}"><input type="text" class="row-content" placeholder="內容" value="${data.content}"><input type="number" class="row-count" value="${data.total}" min="1"><button class="delete-row-btn">&times;</button>`;
                 row.querySelector('.delete-row-btn').addEventListener('click', () => row.remove());
                 prizeRowsContainer.appendChild(row);
             }
 
             function renderPrizeSettingsRows() {
                 prizeRowsContainer.innerHTML = '';
-                prizeConfig.forEach(p => addSettingsRow({ title: p.title, content: p.content, total: p.total }));
+                prizeConfig.forEach(p => addSettingsRow(p));
             }
 
             function renderPrizeList() {
                 prizeListDisplay.innerHTML = '';
-                prizeConfig.forEach((prize) => {
-                    const drawn = prizeDrawCounts[prize.id] || 0;
-                    const isFullyDrawn = drawn >= prize.total;
+                prizeConfig.forEach(p => {
+                    const drawn = prizeDrawCounts[p.id] || 0;
+                    const fullyDrawn = drawn >= p.total;
                     const li = document.createElement('li');
-                    li.className = 'prize-item' + (isFullyDrawn ? ' drawn' : '') + (prize.id === selectedPrizeIndex ? ' active' : '');
-                    li.innerHTML = `<div style="display:flex; flex-direction:column;"><span style="font-weight:bold; color:var(--primary-color);">${prize.title}</span><span style="font-size:0.8em; color:#666;">${prize.content}</span></div><span style="font-size:0.8em; color:#999;">(${drawn}/${prize.total})</span>`;
-                    li.addEventListener('click', () => { if (!isRolling && !isStopping && !isFullyDrawn) selectPrize(prize.id); });
+                    li.className = `prize-item ${fullyDrawn ? 'drawn' : ''} ${p.id === selectedPrizeIndex ? 'active' : ''}`;
+                    li.innerHTML = `<span><strong>${p.title}</strong></span><span>(${drawn}/${p.total})</span>`;
+                    li.addEventListener('click', () => { if (!isRolling && !fullyDrawn) { selectedPrizeIndex = p.id; renderPrizeList(); updateUIState(); } });
                     prizeListDisplay.appendChild(li);
                 });
             }
 
-            function selectPrize(id) {
-                selectedPrizeIndex = id;
-                winnerDisplay.textContent = "???";
-                winnerDisplay.classList.remove('highlight-winner');
-                renderPrizeList();
-                updateUIState();
-            }
-
             function updateUIState() {
-                headerTitle.textContent = titleInput.value.trim() || "🎉 年終尾牙大抽獎 🎉";
+                headerTitle.textContent = titleInput.value.trim();
                 groupTitleDisplay.textContent = groupTitleInput.value.trim();
                 groupTitleDisplay.style.display = groupTitleInput.value.trim() ? 'block' : 'none';
                 subtitleDisplay.textContent = subtitleInput.value.trim();
                 subtitleDisplay.style.display = subtitleInput.value.trim() ? 'block' : 'none';
 
-                const prize = prizeConfig.find(p => p.id === selectedPrizeIndex);
-                if (isStopping) { mainActionBtn.textContent = "抽獎中..."; mainActionBtn.disabled = true; }
-                else if (isRolling) { mainActionBtn.textContent = "停止"; mainActionBtn.className = 'btn btn-action btn-stop'; }
+                const p = prizeConfig.find(p => p.id === selectedPrizeIndex);
+                if (isRolling) { mainActionBtn.textContent = "停止"; mainActionBtn.className = "btn btn-action btn-stop"; }
                 else {
-                    mainActionBtn.textContent = "開始抽獎"; mainActionBtn.className = 'btn btn-action btn-start';
-                    if (prize) {
-                        const drawn = prizeDrawCounts[prize.id] || 0;
-                        mainActionBtn.disabled = drawn >= prize.total;
-                        currentPrizeLabel.innerHTML = `準備抽：<span style="color:var(--primary-color)">${prize.title}</span>`;
-                    } else {
-                        currentPrizeLabel.textContent = "請選擇一個獎項"; mainActionBtn.disabled = true;
-                    }
+                    mainActionBtn.textContent = "開始抽獎"; mainActionBtn.className = "btn btn-action btn-start";
+                    mainActionBtn.disabled = !p || (prizeDrawCounts[p.id] >= p.total);
+                    currentPrizeLabel.innerHTML = p ? `準備抽：<span style="color:var(--primary-color)">${p.title}</span>` : "請選擇獎項";
                 }
             }
 
-            mainActionBtn.addEventListener('click', () => { if (isRolling) stopDraw(); else startDraw(); });
-
-            function startDraw() {
-                if (selectedPrizeIndex === -1) return;
-                recalculateParticipantPool();
-                if (participants.length === 0) { alert("名單已空！"); return; }
-                isRolling = true; winnerDisplay.textContent = "Rolling..."; updateUIState();
-                rollInterval = setInterval(() => { winnerDisplay.textContent = participants[Math.floor(Math.random() * participants.length)]; }, 50);
-            }
-
-            function stopDraw() {
-                isStopping = true; updateUIState();
-                let speed = 50, steps = 0;
-                function slowLoop() {
-                    clearInterval(rollInterval);
-                    winnerDisplay.textContent = participants[Math.floor(Math.random() * participants.length)];
-                    speed += 40; steps++;
-                    if (steps < 10) rollInterval = setInterval(slowLoop, speed);
-                    else finalizeWinner();
+            mainActionBtn.addEventListener('click', () => {
+                if (isRolling) finalizeWinner();
+                else {
+                    const winners = new Set(resultsHistory.map(r => r.winnerName));
+                    participants = allParticipants.filter(p => !winners.has(p));
+                    if (participants.length === 0) { alert("無人可抽！"); return; }
+                    isRolling = true; updateUIState();
+                    window.rollInt = setInterval(() => { winnerDisplay.textContent = participants[Math.floor(Math.random() * participants.length)]; }, 50);
                 }
-                slowLoop();
-            }
+            });
 
             function finalizeWinner() {
-                isRolling = false; isStopping = false; clearInterval(rollInterval);
-                const winnerName = participants[Math.floor(Math.random() * participants.length)];
-                winnerDisplay.textContent = winnerName; winnerDisplay.classList.add('highlight-winner');
-                showCelebration(winnerName);
-                recordResult(winnerName);
-                renderPrizeList(); updateUIState();
-            }
+                clearInterval(window.rollInt); isRolling = false;
+                const winner = participants[Math.floor(Math.random() * participants.length)];
+                winnerDisplay.textContent = winner;
+                const p = prizeConfig.find(p => p.id === selectedPrizeIndex);
+                prizeDrawCounts[p.id]++;
+                resultsHistory.push({ prizeTitle: p.title, winnerName: winner });
 
-            function showCelebration(winnerName) {
-                const prize = prizeConfig.find(p => p.id === selectedPrizeIndex);
-                celebrationPrize.textContent = prize ? prize.name : "";
-                celebrationWinner.textContent = winnerName;
+                celebrationPrize.textContent = p.title; celebrationWinner.textContent = winner;
                 celebrationOverlay.style.display = 'flex';
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            }
 
-            celebrationOverlay.addEventListener('click', () => celebrationOverlay.style.display = 'none');
-
-            function recordResult(winnerName) {
-                const prize = prizeConfig.find(p => p.id === selectedPrizeIndex);
-                prizeDrawCounts[prize.id]++;
-                resultsHistory.push({ prizeTitle: prize.title, winnerName, timestamp: Date.now() });
-                renderResultsList();
+                renderResultsList(); renderPrizeList(); updateUIState();
             }
 
             function renderResultsList() {
-                resultsList.innerHTML = '';
-                resultsHistory.forEach(r => {
-                    const li = document.createElement('li'); li.className = 'result-item';
-                    li.innerHTML = `<div class="result-prize">${r.prizeTitle}</div><span class="result-name">${r.winnerName}</span>`;
-                    resultsList.appendChild(li);
-                });
-            }
-
-            function recalculateParticipantPool() {
-                const winners = new Set(resultsHistory.map(r => r.winnerName));
-                participants = allParticipants.filter(p => !winners.has(p));
+                resultsList.innerHTML = resultsHistory.map(r => `<li class="result-item"><div class="result-prize">${r.prizeTitle}</div><div class="result-name">${r.winnerName}</div></li>`).join('');
             }
 
             saveSettingsBtn.addEventListener('click', () => {
-                prizeConfig = [];
-                document.querySelectorAll('.prize-row').forEach((row, idx) => {
-                    const title = row.querySelector('.row-title').value.trim();
-                    const content = row.querySelector('.row-content').value.trim();
-                    const count = parseInt(row.querySelector('.row-count').value) || 1;
-                    if (title) prizeConfig.push({ id: idx, title, content, name: `${title} ${content}`, total: count });
-                });
+                prizeConfig = Array.from(document.querySelectorAll('.prize-row')).map((row, idx) => ({
+                    id: idx, title: row.querySelector('.row-title').value, content: row.querySelector('.row-content').value, total: parseInt(row.querySelector('.row-count').value)
+                }));
                 allParticipants = nameInput.value.split('\n').map(s => s.trim()).filter(s => s);
-                prizeDrawCounts = {};
-                prizeConfig.forEach(p => prizeDrawCounts[p.id] = 0);
-                renderPrizeList(); updateUIState();
-                alert("設定已更新！");
-                tabDraw.click();
+                prizeDrawCounts = {}; prizeConfig.forEach(p => prizeDrawCounts[p.id] = 0);
+                resultsHistory = []; renderResultsList(); renderPrizeList(); updateUIState();
+                alert("已更新！"); tabDraw.click();
             });
 
             document.getElementById('loadExampleBtn').addEventListener('click', () => {
-                initFromSamples();
-                renderPrizeSettingsRows();
-                nameInput.value = sampleNames.join('\n');
-                alert("範例載入完成，請點擊儲存！");
+                initFromSamples(); renderPrizeSettingsRows(); nameInput.value = sampleNames.join('\n'); alert("範例已載入！");
             });
 
             tabDraw.addEventListener('click', () => {
@@ -1069,13 +875,13 @@
                 drawModePanel.style.display = 'block'; settingsModePanel.style.display = 'none';
                 document.querySelector('.container').classList.remove('settings-active');
             });
-
             tabSettings.addEventListener('click', () => {
                 tabDraw.classList.remove('active'); tabSettings.classList.add('active');
                 drawModePanel.style.display = 'none'; settingsModePanel.style.display = 'block';
                 document.querySelector('.container').classList.add('settings-active');
             });
-
+            celebrationOverlay.addEventListener('click', () => celebrationOverlay.style.display = 'none');
+            document.getElementById('resetBtn').addEventListener('click', () => { if (confirm("重置？")) { resultsHistory = []; prizeDrawCounts = {}; prizeConfig.forEach(p => prizeDrawCounts[p.id] = 0); renderResultsList(); renderPrizeList(); updateUIState(); } });
             init();
         });
     </script>
